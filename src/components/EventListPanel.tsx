@@ -38,10 +38,10 @@ const getRepeatTypeLabel = (type: RepeatType): string => {
 interface EventListPanelProps {
   filteredEvents: Event[];
   searchTerm: string;
-  setSearchTerm: (term: string) => void;
+  setSearchTerm: (value: string) => void;
   notifiedEvents: string[];
-  handleEditEvent: (event: Event) => void;
-  handleDeleteEvent: (event: Event) => void;
+  handleEditEvent: (value: Event) => void;
+  handleDeleteEvent: (value: Event) => void;
 }
 
 function EventListPanel({

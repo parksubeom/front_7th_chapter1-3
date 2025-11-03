@@ -3,8 +3,6 @@ import {
   Alert,
   AlertTitle,
   Box,
-  FormControl,
-  FormLabel,
   IconButton,
   MenuItem,
   Select,
@@ -24,9 +22,8 @@ import { useEventOperations } from './hooks/useEventOperations.ts';
 import { useNotifications } from './hooks/useNotifications.ts';
 import { useRecurringEventOperations } from './hooks/useRecurringEventOperations.ts';
 import { useSearch } from './hooks/useSearch.ts';
-import { Event, EventForm, RepeatType } from './types.ts';
+import { Event, EventForm } from './types.ts';
 import { findOverlappingEvents } from './utils/eventOverlap.ts';
-import { getTimeErrorMessage } from './utils/timeValidation.ts';
 
 function App() {
   const {
