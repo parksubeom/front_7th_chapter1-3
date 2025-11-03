@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Button,
   Checkbox,
@@ -12,6 +11,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import React from 'react';
 
 import { Event, RepeatType } from '../types.ts';
 
