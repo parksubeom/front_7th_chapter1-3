@@ -7,16 +7,17 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material';
+
 import { Event } from '../types.ts';
 import RecurringEventDialog from './RecurringEventDialog.tsx';
 
 interface AppModalsProps {
   isOverlapDialogOpen: boolean;
-  setIsOverlapDialogOpen: (isOpen: boolean) => void;
+  setIsOverlapDialogOpen: (value: boolean) => void;
   overlappingEvents: Event[];
   onConfirmOverlap: () => void;
   isRecurringDialogOpen: boolean;
-  handleRecurringConfirm: (editSingleOnly: boolean) => void;
+  handleRecurringConfirm: (value: boolean) => void;
   onClose: () => void;
   pendingRecurringEvent: Event | null;
   recurringDialogMode: 'edit' | 'delete';

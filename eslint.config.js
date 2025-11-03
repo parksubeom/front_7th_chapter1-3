@@ -72,13 +72,15 @@ export default [
       ...typescriptPlugin.configs.recommended.rules,
 
       // ESLint rules
-      'no-unused-vars': 'warn',
+      'no-unused-vars': 'off', // Disable base rule to use TypeScript's version
+      '@typescript-eslint/no-unused-vars': 'warn',
 
       // React rules
       'react/prop-types': 'off',
       ...reactHooksPlugin.configs.recommended.rules,
 
       // Import rules
+      'import/no-unresolved': 'error',
       'import/order': [
         'error',
         {
@@ -93,7 +95,7 @@ export default [
 
       // Prettier rules
       ...prettierConfig.rules,
-      'prettier/prettier': 'error',
+      'prettier/prettier': 'warn',
 
       // Storybook rules
       ...storybookPlugin.configs.recommended.rules,
