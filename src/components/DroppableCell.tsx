@@ -28,6 +28,7 @@ const DroppableCell = ({ dateString, day, holiday, onClick, children }: Droppabl
         backgroundColor: isOver ? '#e3f2fd' : 'transparent',
         transition: 'background-color 0.2s ease',
       }}
+      data-testid={`day-cell-${dateString}`}
     >
       {day && (
         <>

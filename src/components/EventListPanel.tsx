@@ -63,7 +63,11 @@ function EventListPanel(props: EventListPanelProps) {
         <Typography>검색 결과가 없습니다.</Typography>
       ) : (
         filteredEvents.map((event) => (
-          <Box key={event.id} sx={{ border: 1, borderRadius: 2, p: 3, width: '100%' }}>
+          <Box
+            key={event.id}
+            sx={{ border: 1, borderRadius: 2, p: 3, width: '100%' }}
+            data-testid={`day-cell-${event.id}`}
+          >
             <Stack direction="row" justifyContent="space-between">
               <Stack>
                 <Stack direction="row" spacing={1} alignItems="center">
