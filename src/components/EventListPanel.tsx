@@ -1,3 +1,5 @@
+// EventListPanel.tsx
+
 import { Delete, Edit, Notifications, Repeat } from '@mui/icons-material';
 import {
   Box,
@@ -12,46 +14,34 @@ import {
 
 import { Event, RepeatType } from '../types.ts';
 
-const notificationOptions = [
-  { value: 1, label: '1분 전' },
-  { value: 10, label: '10분 전' },
-  { value: 60, label: '1시간 전' },
-  { value: 120, label: '2시간 전' },
-  { value: 1440, label: '1일 전' },
-];
-
-const getRepeatTypeLabel = (type: RepeatType): string => {
-  switch (type) {
-    case 'daily':
-      return '일';
-    case 'weekly':
-      return '주';
-    case 'monthly':
-      return '월';
-    case 'yearly':
-      return '년';
-    default:
-      return '';
-  }
-};
-
-interface EventListPanelProps {
-  filteredEvents: Event[];
-  searchTerm: string;
-  setSearchTerm: (value: string) => void;
-  notifiedEvents: string[];
-  handleEditEvent: (value: Event) => void;
-  handleDeleteEvent: (value: Event) => void;
+interface NotificationOption {
+  value: number;
+  label: string;
 }
 
-function EventListPanel({
-  filteredEvents,
-  searchTerm,
-  setSearchTerm,
-  notifiedEvents,
-  handleEditEvent,
-  handleDeleteEvent,
-}: EventListPanelProps) {
+interface EventListPanelProps {
+  searchTerm: string;
+  filteredEvents: Event[];
+  notifiedEvents: string[];
+  notificationOptions: NotificationOption[];
+  onSearchTermChange: (value: string) => void;
+  onEditEvent: (event: Event) => void;
+  onDeleteEvent: (event: Event) => void;
+  getRepeatTypeLabel: (type: RepeatType) => string;
+}
+
+function EventListPanel(props: EventListPanelProps) {
+  const {
+    searchTerm,
+    filteredEvents,
+    notifiedEvents,
+    notificationOptions,
+    onSearchTermChange,
+    onEditEvent,
+    onDeleteEvent,
+    getRepeatTypeLabel,
+  } = props;
+
   return (
     <Stack
       data-testid="event-list"
@@ -65,7 +55,7 @@ function EventListPanel({
           size="small"
           placeholder="검색어를 입력하세요"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => onSearchTermChange(e.target.value)}
         />
       </FormControl>
 
@@ -104,22 +94,27 @@ function EventListPanel({
                 {event.repeat.type !== 'none' && (
                   <Typography>
                     반복: {event.repeat.interval}
-                    {getRepeatTypeLabel(event.repeat.type)}
+                    {event.repeat.type === 'daily' && '일'}
+                    {event.repeat.type === 'weekly' && '주'}
+                    {event.repeat.type === 'monthly' && '월'}
+                    {event.repeat.type === 'yearly' && '년'}
                     마다
                     {event.repeat.endDate && ` (종료: ${event.repeat.endDate})`}
                   </Typography>
                 )}
                 <Typography>
                   알림:{' '}
-                  {notificationOptions.find((option) => option.value === event.notificationTime)
-                    ?.label || '없음'}
+                  {
+                    notificationOptions.find((option) => option.value === event.notificationTime)
+                      ?.label
+                  }
                 </Typography>
               </Stack>
               <Stack>
-                <IconButton aria-label="Edit event" onClick={() => handleEditEvent(event)}>
+                <IconButton aria-label="Edit event" onClick={() => onEditEvent(event)}>
                   <Edit />
                 </IconButton>
-                <IconButton aria-label="Delete event" onClick={() => handleDeleteEvent(event)}>
+                <IconButton aria-label="Delete event" onClick={() => onDeleteEvent(event)}>
                   <Delete />
                 </IconButton>
               </Stack>

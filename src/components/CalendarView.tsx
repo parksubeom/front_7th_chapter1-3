@@ -1,6 +1,11 @@
-import { Notifications, Repeat } from '@mui/icons-material';
+// CalendarView.tsx
+
+import { DndContext, DragOverlay, DragStartEvent, DragEndEvent } from '@dnd-kit/core';
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import {
-  Box,
+  IconButton,
+  MenuItem,
+  Select,
   Stack,
   Table,
   TableBody,
@@ -8,10 +13,11 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Tooltip,
   Typography,
 } from '@mui/material';
 
+import DraggableEvent from './DraggableEvent.tsx';
+import DroppableCell from './DroppableCell.tsx';
 import { Event, RepeatType } from '../types.ts';
 import {
   formatDate,
@@ -22,59 +28,42 @@ import {
   getWeeksAtMonth,
 } from '../utils/dateUtils.ts';
 
-const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
-
-const eventBoxStyles = {
-  notified: {
-    backgroundColor: '#ffebee',
-    fontWeight: 'bold',
-    color: '#d32f2f',
-  },
-  normal: {
-    backgroundColor: '#f5f5f5',
-    fontWeight: 'normal',
-    color: 'inherit',
-  },
-  common: {
-    p: 0.5,
-    my: 0.5,
-    borderRadius: 1,
-    minHeight: '18px',
-    width: '100%',
-    overflow: 'hidden',
-  },
-};
-
-const getRepeatTypeLabel = (type: RepeatType): string => {
-  switch (type) {
-    case 'daily':
-      return '일';
-    case 'weekly':
-      return '주';
-    case 'monthly':
-      return '월';
-    case 'yearly':
-      return '년';
-    default:
-      return '';
-  }
-};
-
+// Props 정의
 interface CalendarViewProps {
   view: 'week' | 'month';
+  setView: (view: 'week' | 'month') => void;
+  navigate: (direction: 'prev' | 'next') => void;
   currentDate: Date;
   holidays: Record<string, string>;
   filteredEvents: Event[];
   notifiedEvents: string[];
+  activeEvent: Event | null;
+  onDragStart: (event: DragStartEvent) => void;
+  onDragEnd: (event: DragEndEvent) => void;
+  onCellClick: (dateString: string) => void;
+  getRepeatTypeLabel: (type: RepeatType) => string;
 }
 
-function CalendarView({
-  view,
-  currentDate,
-  holidays,
-  filteredEvents,
-  notifiedEvents,
-}: CalendarViewProps) {
+// App.tsx에서 캘린더 뷰 전용 상수를 이동
+const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+
+function CalendarView(props: CalendarViewProps) {
+  const {
+    view,
+    setView,
+    navigate,
+    currentDate,
+    holidays,
+    filteredEvents,
+    notifiedEvents,
+    activeEvent,
+    onDragStart,
+    onDragEnd,
+    onCellClick,
+    getRepeatTypeLabel,
+  } = props;
+
+  // --- App.tsx에서 renderWeekView 함수를 이동 ---
   const renderWeekView = () => {
     const weekDates = getWeekDates(currentDate);
     return (
@@ -93,63 +82,40 @@ function CalendarView({
             </TableHead>
             <TableBody>
               <TableRow>
-                {weekDates.map((date) => (
-                  <TableCell
-                    key={date.toISOString()}
-                    sx={{
-                      height: '120px',
-                      verticalAlign: 'top',
-                      width: '14.28%',
-                      padding: 1,
-                      border: '1px solid #e0e0e0',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <Typography variant="body2" fontWeight="bold">
-                      {date.getDate()}
-                    </Typography>
-                    {filteredEvents
-                      .filter(
-                        (event) => new Date(event.date).toDateString() === date.toDateString()
-                      )
-                      .map((event) => {
-                        const isNotified = notifiedEvents.includes(event.id);
-                        const isRepeating = event.repeat.type !== 'none';
+                {weekDates.map((date) => {
+                  const dateString = formatDate(date, date.getDate());
+                  const day = date.getDate();
+                  const holiday = holidays[dateString];
 
-                        return (
-                          <Box
-                            key={event.id}
-                            sx={{
-                              ...eventBoxStyles.common,
-                              ...(isNotified ? eventBoxStyles.notified : eventBoxStyles.normal),
-                            }}
-                          >
-                            <Stack direction="row" spacing={1} alignItems="center">
-                              {isNotified && <Notifications fontSize="small" />}
-                              {isRepeating && (
-                                <Tooltip
-                                  title={`${event.repeat.interval}${getRepeatTypeLabel(
-                                    event.repeat.type
-                                  )}마다 반복${
-                                    event.repeat.endDate ? ` (종료: ${event.repeat.endDate})` : ''
-                                  }`}
-                                >
-                                  <Repeat fontSize="small" />
-                                </Tooltip>
-                              )}
-                              <Typography
-                                variant="caption"
-                                noWrap
-                                sx={{ fontSize: '0.75rem', lineHeight: 1.2 }}
-                              >
-                                {event.title}
-                              </Typography>
-                            </Stack>
-                          </Box>
-                        );
-                      })}
-                  </TableCell>
-                ))}
+                  return (
+                    <DroppableCell
+                      key={date.toISOString()}
+                      dateString={dateString}
+                      day={day}
+                      holiday={holiday}
+                      onClick={() => onCellClick(dateString)} // props로 받은 핸들러 사용
+                    >
+                      {filteredEvents
+                        .filter(
+                          (event) => new Date(event.date).toDateString() === date.toDateString()
+                        )
+                        .map((event) => {
+                          const isNotified = notifiedEvents.includes(event.id);
+                          const isRepeating = event.repeat.type !== 'none';
+
+                          return (
+                            <DraggableEvent
+                              key={event.id}
+                              event={event}
+                              isNotified={isNotified}
+                              isRepeating={isRepeating}
+                              getRepeatTypeLabel={getRepeatTypeLabel} // props로 받은 함수 사용
+                            />
+                          );
+                        })}
+                    </DroppableCell>
+                  );
+                })}
               </TableRow>
             </TableBody>
           </Table>
@@ -158,8 +124,10 @@ function CalendarView({
     );
   };
 
+  // --- App.tsx에서 renderMonthView 함수를 이동 ---
   const renderMonthView = () => {
     const weeks = getWeeksAtMonth(currentDate);
+
     return (
       <Stack data-testid="month-view" spacing={4} sx={{ width: '100%' }}>
         <Typography variant="h5">{formatMonth(currentDate)}</Typography>
@@ -182,71 +150,29 @@ function CalendarView({
                     const holiday = holidays[dateString];
 
                     return (
-                      <TableCell
+                      <DroppableCell
                         key={dayIndex}
-                        sx={{
-                          height: '120px',
-                          verticalAlign: 'top',
-                          width: '14.28%',
-                          padding: 1,
-                          border: '1px solid #e0e0e0',
-                          overflow: 'hidden',
-                          position: 'relative',
-                        }}
+                        dateString={dateString}
+                        day={day}
+                        holiday={holiday}
+                        onClick={() => onCellClick(dateString)} // props로 받은 핸들러 사용
                       >
-                        {day && (
-                          <>
-                            <Typography variant="body2" fontWeight="bold">
-                              {day}
-                            </Typography>
-                            {holiday && (
-                              <Typography variant="body2" color="error">
-                                {holiday}
-                              </Typography>
-                            )}
-                            {getEventsForDay(filteredEvents, day).map((event) => {
-                              const isNotified = notifiedEvents.includes(event.id);
-                              const isRepeating = event.repeat.type !== 'none';
+                        {day &&
+                          getEventsForDay(filteredEvents, day).map((event) => {
+                            const isNotified = notifiedEvents.includes(event.id);
+                            const isRepeating = event.repeat.type !== 'none';
 
-                              return (
-                                <Box
-                                  key={event.id}
-                                  sx={{
-                                    ...eventBoxStyles.common,
-                                    ...(isNotified
-                                      ? eventBoxStyles.notified
-                                      : eventBoxStyles.normal),
-                                  }}
-                                >
-                                  <Stack direction="row" spacing={1} alignItems="center">
-                                    {isNotified && <Notifications fontSize="small" />}
-                                    {isRepeating && (
-                                      <Tooltip
-                                        title={`${event.repeat.interval}${getRepeatTypeLabel(
-                                          event.repeat.type
-                                        )}마다 반복${
-                                          event.repeat.endDate
-                                            ? ` (종료: ${event.repeat.endDate})`
-                                            : ''
-                                        }`}
-                                      >
-                                        <Repeat fontSize="small" />
-                                      </Tooltip>
-                                    )}
-                                    <Typography
-                                      variant="caption"
-                                      noWrap
-                                      sx={{ fontSize: '0.75rem', lineHeight: 1.2 }}
-                                    >
-                                      {event.title}
-                                    </Typography>
-                                  </Stack>
-                                </Box>
-                              );
-                            })}
-                          </>
-                        )}
-                      </TableCell>
+                            return (
+                              <DraggableEvent
+                                key={event.id}
+                                event={event}
+                                isNotified={isNotified}
+                                isRepeating={isRepeating}
+                                getRepeatTypeLabel={getRepeatTypeLabel} // props로 받은 함수 사용
+                              />
+                            );
+                          })}
+                      </DroppableCell>
                     );
                   })}
                 </TableRow>
@@ -258,7 +184,60 @@ function CalendarView({
     );
   };
 
-  return view === 'week' ? renderWeekView() : renderMonthView();
+  // --- App.tsx에서 캘린더 뷰 관련 JSX를 이동 ---
+  return (
+    <DndContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+      <Stack flex={1} spacing={5}>
+        <Typography variant="h4">일정 보기</Typography>
+
+        <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="center">
+          <IconButton aria-label="Previous" onClick={() => navigate('prev')}>
+            <ChevronLeft />
+          </IconButton>
+          <Select
+            size="small"
+            aria-label="뷰 타입 선택"
+            value={view}
+            onChange={(e) => setView(e.target.value as 'week' | 'month')}
+          >
+            <MenuItem value="week" aria-label="week-option">
+              Week
+            </MenuItem>
+            <MenuItem value="month" aria-label="month-option">
+              Month
+            </MenuItem>
+          </Select>
+          <IconButton aria-label="Next" onClick={() => navigate('next')}>
+            <ChevronRight />
+          </IconButton>
+        </Stack>
+
+        {view === 'week' && renderWeekView()}
+        {view === 'month' && renderMonthView()}
+      </Stack>
+      <DragOverlay
+        dropAnimation={{
+          duration: 200,
+          easing: 'ease-out',
+          keyframes() {
+            return [
+              { opacity: 1, scaleX: 1, scaleY: 1 },
+              { opacity: 0, scaleX: 1, scaleY: 1 },
+            ];
+          },
+        }}
+      >
+        {activeEvent && (
+          <DraggableEvent
+            event={activeEvent}
+            isNotified={notifiedEvents.includes(activeEvent.id)}
+            isRepeating={activeEvent.repeat.type !== 'none'}
+            getRepeatTypeLabel={getRepeatTypeLabel}
+          />
+        )}
+      </DragOverlay>
+    </DndContext>
+  );
 }
 
 export default CalendarView;

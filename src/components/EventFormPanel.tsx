@@ -1,3 +1,5 @@
+// EventFormPanel.tsx
+
 import {
   Button,
   Checkbox,
@@ -15,79 +17,91 @@ import React from 'react';
 
 import { Event, RepeatType } from '../types.ts';
 
-const categories = ['업무', '개인', '가족', '기타'];
-
-const notificationOptions = [
-  { value: 1, label: '1분 전' },
-  { value: 10, label: '10분 전' },
-  { value: 60, label: '1시간 전' },
-  { value: 120, label: '2시간 전' },
-  { value: 1440, label: '1일 전' },
-];
-
-interface EventFormPanelProps {
+// App.tsx의 useEventForm 훅의 반환 타입과 일치시킵니다.
+// (타입을 import하거나 여기에 직접 정의할 수 있습니다)
+interface EventFormProps {
   title: string;
-  setTitle: (title: string) => void;
   date: string;
-  setDate: (date: string) => void;
   startTime: string;
   endTime: string;
-  handleStartTimeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleEndTimeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  description: string;
+  location: string;
+  category: string;
+  isRepeating: boolean;
+  repeatType: RepeatType;
+  repeatInterval: number;
+  repeatEndDate: string;
+  notificationTime: number;
   startTimeError: string | null;
   endTimeError: string | null;
-  description: string;
-  setDescription: (description: string) => void;
-  location: string;
-  setLocation: (location: string) => void;
-  category: string;
-  setCategory: (category: string) => void;
-  isRepeating: boolean;
-  setIsRepeating: (isRepeating: boolean) => void;
-  repeatType: RepeatType;
-  setRepeatType: (repeatType: RepeatType) => void;
-  repeatInterval: number;
-  setRepeatInterval: (interval: number) => void;
-  repeatEndDate: string;
-  setRepeatEndDate: (date: string) => void;
-  notificationTime: number;
-  setNotificationTime: (time: number) => void;
   editingEvent: Event | null;
-  addOrUpdateEvent: () => void;
-  validateTime: () => void;
 }
 
-function EventFormPanel({
-  title,
-  setTitle,
-  date,
-  setDate,
-  startTime,
-  endTime,
-  handleStartTimeChange,
-  handleEndTimeChange,
-  startTimeError,
-  endTimeError,
-  description,
-  setDescription,
-  location,
-  setLocation,
-  category,
-  setCategory,
-  isRepeating,
-  setIsRepeating,
-  repeatType,
-  setRepeatType,
-  repeatInterval,
-  setRepeatInterval,
-  repeatEndDate,
-  setRepeatEndDate,
-  notificationTime,
-  setNotificationTime,
-  editingEvent,
-  addOrUpdateEvent,
-  validateTime,
-}: EventFormPanelProps) {
+interface NotificationOption {
+  value: number;
+  label: string;
+}
+
+interface EventFormPanelProps {
+  formProps: EventFormProps;
+  categories: string[];
+  notificationOptions: NotificationOption[];
+  // 이벤트 핸들러들
+  onTitleChange: (value: string) => void;
+  onDateChange: (value: string) => void;
+  onStartTimeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onEndTimeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onDescriptionChange: (value: string) => void;
+  onLocationChange: (value: string) => void;
+  onCategoryChange: (value: string) => void;
+  onIsRepeatingChange: (value: boolean) => void;
+  onRepeatTypeChange: (value: RepeatType) => void;
+  onRepeatIntervalChange: (value: number) => void;
+  onRepeatEndDateChange: (value: string) => void;
+  onNotificationTimeChange: (value: number) => void;
+  onTimeBlur: () => void;
+  onSubmit: () => void;
+}
+
+function EventFormPanel(props: EventFormPanelProps) {
+  const {
+    formProps,
+    categories,
+    notificationOptions,
+    onTitleChange,
+    onDateChange,
+    onStartTimeChange,
+    onEndTimeChange,
+    onDescriptionChange,
+    onLocationChange,
+    onCategoryChange,
+    onIsRepeatingChange,
+    onRepeatTypeChange,
+    onRepeatIntervalChange,
+    onRepeatEndDateChange,
+    onNotificationTimeChange,
+    onTimeBlur,
+    onSubmit,
+  } = props;
+
+  const {
+    title,
+    date,
+    startTime,
+    endTime,
+    description,
+    location,
+    category,
+    isRepeating,
+    repeatType,
+    repeatInterval,
+    repeatEndDate,
+    notificationTime,
+    startTimeError,
+    endTimeError,
+    editingEvent,
+  } = formProps;
+
   return (
     <Stack spacing={2} sx={{ width: '20%' }}>
       <Typography variant="h4">{editingEvent ? '일정 수정' : '일정 추가'}</Typography>
@@ -98,7 +112,7 @@ function EventFormPanel({
           id="title"
           size="small"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => onTitleChange(e.target.value)}
         />
       </FormControl>
 
@@ -109,7 +123,8 @@ function EventFormPanel({
           size="small"
           type="date"
           value={date}
-          onChange={(e) => setDate(e.target.value)}
+          onChange={(e) => onDateChange(e.target.value)}
+          InputLabelProps={{ shrink: true }}
         />
       </FormControl>
 
@@ -122,9 +137,10 @@ function EventFormPanel({
               size="small"
               type="time"
               value={startTime}
-              onChange={handleStartTimeChange}
-              onBlur={validateTime}
+              onChange={onStartTimeChange}
+              onBlur={onTimeBlur}
               error={!!startTimeError}
+              InputLabelProps={{ shrink: true }}
             />
           </Tooltip>
         </FormControl>
@@ -136,9 +152,10 @@ function EventFormPanel({
               size="small"
               type="time"
               value={endTime}
-              onChange={handleEndTimeChange}
-              onBlur={validateTime}
+              onChange={onEndTimeChange}
+              onBlur={onTimeBlur}
               error={!!endTimeError}
+              InputLabelProps={{ shrink: true }}
             />
           </Tooltip>
         </FormControl>
@@ -150,7 +167,7 @@ function EventFormPanel({
           id="description"
           size="small"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => onDescriptionChange(e.target.value)}
         />
       </FormControl>
 
@@ -160,7 +177,7 @@ function EventFormPanel({
           id="location"
           size="small"
           value={location}
-          onChange={(e) => setLocation(e.target.value)}
+          onChange={(e) => onLocationChange(e.target.value)}
         />
       </FormControl>
 
@@ -170,7 +187,7 @@ function EventFormPanel({
           id="category"
           size="small"
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e) => onCategoryChange(e.target.value)}
           aria-labelledby="category-label"
           aria-label="카테고리"
         >
@@ -190,11 +207,11 @@ function EventFormPanel({
                 checked={isRepeating}
                 onChange={(e) => {
                   const checked = e.target.checked;
-                  setIsRepeating(checked);
+                  onIsRepeatingChange(checked);
                   if (checked) {
-                    setRepeatType('daily');
+                    onRepeatTypeChange('daily');
                   } else {
-                    setRepeatType('none');
+                    onRepeatTypeChange('none');
                   }
                 }}
               />
@@ -212,7 +229,7 @@ function EventFormPanel({
               size="small"
               value={repeatType}
               aria-label="반복 유형"
-              onChange={(e) => setRepeatType(e.target.value as RepeatType)}
+              onChange={(e) => onRepeatTypeChange(e.target.value as RepeatType)}
             >
               <MenuItem value="daily" aria-label="daily-option">
                 매일
@@ -236,7 +253,7 @@ function EventFormPanel({
                 size="small"
                 type="number"
                 value={repeatInterval}
-                onChange={(e) => setRepeatInterval(Number(e.target.value))}
+                onChange={(e) => onRepeatIntervalChange(Number(e.target.value))}
                 slotProps={{ htmlInput: { min: 1 } }}
               />
             </FormControl>
@@ -247,7 +264,8 @@ function EventFormPanel({
                 size="small"
                 type="date"
                 value={repeatEndDate}
-                onChange={(e) => setRepeatEndDate(e.target.value)}
+                onChange={(e) => onRepeatEndDateChange(e.target.value)}
+                InputLabelProps={{ shrink: true }}
               />
             </FormControl>
           </Stack>
@@ -260,7 +278,7 @@ function EventFormPanel({
           id="notification"
           size="small"
           value={notificationTime}
-          onChange={(e) => setNotificationTime(Number(e.target.value))}
+          onChange={(e) => onNotificationTimeChange(Number(e.target.value))}
         >
           {notificationOptions.map((option) => (
             <MenuItem key={option.value} value={option.value}>
@@ -272,7 +290,7 @@ function EventFormPanel({
 
       <Button
         data-testid="event-submit-button"
-        onClick={addOrUpdateEvent}
+        onClick={onSubmit}
         variant="contained"
         color="primary"
       >
