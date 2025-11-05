@@ -34,10 +34,6 @@ export const useEventForm = (initialEvent?: Event) => {
     setTimeError(getTimeErrorMessage(newStartTime, endTime));
   };
 
-  const validateTime = () => {
-    setTimeError(getTimeErrorMessage(startTime, endTime));
-  };
-
   const handleEndTimeChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newEndTime = e.target.value;
     setEndTime(newEndTime);
@@ -107,7 +103,6 @@ export const useEventForm = (initialEvent?: Event) => {
     handleStartTimeChange,
     handleEndTimeChange,
     resetForm,
-    validateTime,
     editEvent,
   };
 };

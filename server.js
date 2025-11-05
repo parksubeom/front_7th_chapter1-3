@@ -45,7 +45,7 @@ app.get('/api/events', async (_, res) => {
  */
 app.post('/api/events', async (req, res) => {
   const events = await getEvents();
-  // [✅ 스펙 4.1] `seriesId`가 `null`로 오는 경우(단일 수정)를 대비해 `id`만 생성합니다.
+  // [✅ 스펙 4.1] `repeatId`가 `null`로 오는 경우(단일 수정)를 대비해 `id`만 생성합니다.
   const newEvent = { id: randomUUID(), ...req.body };
 
   fs.writeFileSync(
@@ -72,7 +72,7 @@ app.post('/api/events', async (req, res) => {
  */
 app.put('/api/events/:id', async (req, res) => {
   const events = await getEvents();
-  const id = req.params.id; // URL 파라미터 id는 seriesId일 수도, event id일 수도 있음
+  const id = req.params.id; // URL 파라미터 id는 repeatId일 수도, event id일 수도 있음
   const eventIndex = events.events.findIndex((event) => event.id === id);
 
   if (eventIndex > -1) {
@@ -107,19 +107,19 @@ app.put('/api/events/:id', async (req, res) => {
 /**
  * @route DELETE /api/events/:id
  * @description ID를 기준으로 단일 이벤트 또는 **반복 시리즈 전체**를 삭제합니다.
- * @param {string} req.params.id - 삭제할 이벤트의 ID 또는 `seriesId`.
+ * @param {string} req.params.id - 삭제할 이벤트의 ID 또는 `repeatId`.
  * @returns {object} 204 No Content - 성공적으로 삭제됨.
  * @returns {object} 404 Not Found - (이 코드는 404를 반환하지 않으나, 스펙상 필요할 수 있음)
  */
 app.delete('/api/events/:id', async (req, res) => {
   const events = await getEvents();
-  const id = req.params.id; // 이 ID는 seriesId일 수 있음 (스펙 5.2)
+  const id = req.params.id; // 이 ID는 repeatId일 수 있음 (스펙 5.2)
 
   fs.writeFileSync(
     `${__dirname}/src/__mocks__/response/${dbName}`,
     JSON.stringify({
-      // [✅ 스펙 5.2] ID가 일치하거나 seriesId가 일치하는 모든 이벤트를 필터링
-      events: events.events.filter((event) => event.id !== id && event.seriesId !== id),
+      // [✅ 스펙 5.2] ID가 일치하거나 repeatId가 일치하는 모든 이벤트를 필터링
+      events: events.events.filter((event) => event.id !== id && event.repeatId !== id),
     })
   );
 
@@ -218,7 +218,7 @@ app.delete('/api/events-list', async (req, res) => {
 /**
  * @route PUT /api/recurring-events/:repeatId
  * @description (스펙 4.2와 유사) '전체 시리즈 수정'을 수행합니다.
- * @param {string} req.params.repeatId - 수정할 `repeat.id` (seriesId).
+ * @param {string} req.params.repeatId - 수정할 `repeat.id` (repeatId).
  * @param {Partial<EventForm>} req.body - 수정할 필드.
  * @returns {object} 200 OK - 수정된 시리즈 이벤트 목록.
  * @returns {object} 404 Not Found - 해당 시리즈가 없을 경우.
@@ -228,7 +228,7 @@ app.put('/api/recurring-events/:repeatId', async (req, res) => {
   const repeatId = req.params.repeatId;
   const updateData = req.body;
 
-  // (이 로직은 `event.repeat.id`를 사용하나, 스펙은 `event.seriesId`를 사용함)
+  // (이 로직은 `event.repeat.id`를 사용하나, 스펙은 `event.repeatId`를 사용함)
   const seriesEvents = events.events.filter((event) => event.repeat.id === repeatId);
 
   if (seriesEvents.length === 0) {
@@ -261,7 +261,7 @@ app.put('/api/recurring-events/:repeatId', async (req, res) => {
 /**
  * @route DELETE /api/recurring-events/:repeatId
  * @description (스펙 5.2와 유사) '전체 시리즈 삭제'를 수행합니다.
- * @param {string} req.params.repeatId - 삭제할 `repeat.id` (seriesId).
+ * @param {string} req.params.repeatId - 삭제할 `repeat.id` (repeatId).
  * @returns {object} 204 No Content - 성공적으로 삭제됨.
  * @returns {object} 404 Not Found - 해당 시리즈가 없을 경우.
  */

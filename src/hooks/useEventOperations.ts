@@ -37,45 +37,63 @@ export const useEventOperations = (editing: boolean, onSave?: () => void) => {
     }
   };
 
-  const saveEvent = async (eventData: Event | EventForm) => {
+  const createEvent = async (eventData: EventForm) => {
     try {
-      let response;
-      if (editing) {
-        const editingEvent = {
-          ...eventData,
-          // ! TEST CASE
-          repeat: eventData.repeat ?? {
-            type: 'none',
-            interval: 0,
-            endDate: '',
-          },
-        };
-
-        response = await fetch(`/api/events/${(eventData as Event).id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(editingEvent),
-        });
-      } else {
-        response = await fetch('/api/events', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(eventData),
-        });
-      }
+      const response = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(eventData),
+      });
 
       if (!response.ok) {
-        throw new Error('Failed to save event');
+        throw new Error('Failed to create event');
       }
 
       await fetchEvents();
       onSave?.();
-      enqueueSnackbar(editing ? SUCCESS_MESSAGES.EVENT_UPDATED : SUCCESS_MESSAGES.EVENT_ADDED, {
-        variant: 'success',
-      });
+      enqueueSnackbar(SUCCESS_MESSAGES.EVENT_ADDED, { variant: 'success' });
     } catch (error) {
-      console.error('Error saving event:', error);
+      console.error('Error creating event:', error);
       enqueueSnackbar(ERROR_MESSAGES.SAVE_FAILED, { variant: 'error' });
+    }
+  };
+
+  const updateEvent = async (eventData: Event) => {
+    try {
+      const editingEvent = {
+        ...eventData,
+        // ! TEST CASE
+        repeat: eventData.repeat ?? {
+          type: 'none',
+          interval: 0,
+          endDate: '',
+        },
+      };
+
+      const response = await fetch(`/api/events/${eventData.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingEvent),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update event');
+      }
+
+      await fetchEvents();
+      onSave?.();
+      enqueueSnackbar(SUCCESS_MESSAGES.EVENT_UPDATED, { variant: 'success' });
+    } catch (error) {
+      console.error('Error updating event:', error);
+      enqueueSnackbar(ERROR_MESSAGES.SAVE_FAILED, { variant: 'error' });
+    }
+  };
+
+  const saveEvent = async (eventData: Event | EventForm) => {
+    if (editing) {
+      await updateEvent(eventData as Event);
+    } else {
+      await createEvent(eventData as EventForm);
     }
   };
 
@@ -127,5 +145,13 @@ export const useEventOperations = (editing: boolean, onSave?: () => void) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { events, fetchEvents, saveEvent, deleteEvent, createRepeatEvent };
+  return {
+    events,
+    fetchEvents,
+    saveEvent,
+    createEvent,
+    updateEvent,
+    deleteEvent,
+    createRepeatEvent,
+  };
 };
