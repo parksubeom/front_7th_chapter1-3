@@ -115,7 +115,7 @@ function CalendarView(props: CalendarViewProps) {
 
             <TableBody>
               <TableRow>
-                {weekDates.map((date) => {
+                {weekDates.map((date, dayIndex) => {
                   const dateString = formatDate(date, date.getDate());
 
                   const day = date.getDate();
@@ -129,7 +129,6 @@ function CalendarView(props: CalendarViewProps) {
                       day={day}
                       holiday={holiday}
                       onClick={() => onCellClick(dateString)} // props로 받은 핸들러 사용
-                      data-testid={`day-cell-${dateString}`}
                     >
                       {filteredEvents
 
@@ -200,7 +199,6 @@ function CalendarView(props: CalendarViewProps) {
                         day={day}
                         holiday={holiday}
                         onClick={() => onCellClick(dateString)} // props로 받은 핸들러 사용
-                        data-testid={`day-cell-${dateString}`} // [✅ TESTID]
                       >
                         {day &&
                           getEventsForDay(filteredEvents, day).map((event) => {
@@ -289,7 +287,6 @@ function CalendarView(props: CalendarViewProps) {
             isNotified={notifiedEvents.includes(activeEvent.id)}
             isRepeating={activeEvent.repeat.type !== 'none'}
             getRepeatTypeLabel={getRepeatTypeLabel}
-            data-testid={`day-cell-${activeEvent.id}`}
           />
         )}
       </DragOverlay>

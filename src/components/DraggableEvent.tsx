@@ -59,7 +59,6 @@ const DraggableEvent = ({
         ...eventBoxStyles.common, // 공통 스타일
         ...(isNotified ? eventBoxStyles.notified : eventBoxStyles.normal), // 조건부 스타일
       }}
-      data-testid={`event-item-${event.id}`}
     >
       <Stack direction="row" spacing={1} alignItems="center">
         {isNotified && <Notifications fontSize="small" />}

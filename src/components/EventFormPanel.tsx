@@ -279,6 +279,7 @@ function EventFormPanel(props: EventFormPanelProps) {
           size="small"
           value={notificationTime}
           onChange={(e) => onNotificationTimeChange(Number(e.target.value))}
+          data-testid="notification-select"
         >
           {notificationOptions.map((option) => (
             <MenuItem key={option.value} value={option.value}>
