@@ -1,60 +1,42 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import type { Meta, StoryObj } from '@storybook/react';
+import { fn } from 'storybook/test';
 
-import { Button } from "./Button";
+import RecurringEventDialog from './RecurringEventDialog';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
-  title: "Example/Button",
-  component: Button,
+  title: 'Components/RecurringEventDialog',
+  component: RecurringEventDialog,
   parameters: {
     // Optional parameter to center the component in the Canvas. More info: https://storybook.js.org/docs/configure/story-layout
-    layout: "centered",
+    layout: 'centered',
   },
   // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/writing-docs/autodocs
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   // More on argTypes: https://storybook.js.org/docs/api/argtypes
-  argTypes: {
-    backgroundColor: { control: "color" },
-  },
+  argTypes: {},
   // Use `fn` to spy on the onClick arg, which will appear in the actions panel once invoked: https://storybook.js.org/docs/essentials/actions#action-args
-  args: { onClick: fn() },
-} satisfies Meta<typeof Button>;
+  args: { open: true, onClose: fn(), onConfirm: fn() },
+} satisfies Meta<typeof RecurringEventDialog>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
-export const Primary: Story = {
+export const EditMode: Story = {
   args: {
-    primary: true,
-    label: "Button",
+    mode: 'edit',
   },
 };
 
-export const Secondary: Story = {
+export const DeleteMode: Story = {
   args: {
-    label: "Button",
+    mode: 'delete',
   },
 };
 
-export const Large: Story = {
+export const MoveMode: Story = {
   args: {
-    size: "large",
-    label: "Button",
-  },
-};
-
-export const Small: Story = {
-  args: {
-    size: "small",
-    label: "Button",
-  },
-};
-
-export const Disabled: Story = {
-  args: {
-    label: "Disabled Button",
-    disabled: true,
+    mode: 'move',
   },
 };
