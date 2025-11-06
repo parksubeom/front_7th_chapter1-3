@@ -198,7 +198,7 @@ function CalendarView(props: CalendarViewProps) {
                         dateString={dateString}
                         day={day}
                         holiday={holiday}
-                        onClick={() => onCellClick(dateString)} // props로 받은 핸들러 사용
+                        onClick={() => day && onCellClick(dateString)} // props로 받은 핸들러 사용
                       >
                         {day &&
                           getEventsForDay(filteredEvents, day).map((event) => {
