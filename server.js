@@ -269,7 +269,7 @@ app.delete('/api/recurring-events/:repeatId', async (req, res) => {
   const events = await getEvents();
   const repeatId = req.params.repeatId;
 
-  const remainingEvents = events.events.filter((event) => event.repeat.id !== repeatId);
+  const remainingEvents = events.events.filter((event) => event.repeat?.id !== repeatId);
 
   if (remainingEvents.length === events.events.length) {
     return res.status(404).send('Recurring series not found');

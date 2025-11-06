@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "test:e2e:headed": "set TEST_ENV=e2e && playwright test --headed",
     "server": "node server.js",
     "server:watch": "node --watch server.js",
     "start": "vite",
@@ -52,6 +53,7 @@
     "@vitest/coverage-v8": "^2.0.3",
     "@vitest/ui": "^3.2.4",
     "concurrently": "^8.2.2",
+    "cross-env": "^10.1.0",
     "eslint": "^9.30.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-import": "^2.32.0",
