@@ -91,6 +91,48 @@ describe('일정 CRUD 및 기본 기능', () => {
     expect(eventList.getByText('카테고리: 업무')).toBeInTheDocument();
   });
 
+  it('기존 일정 수정 중에 날짜 셀을 클릭하면 수정 폼의 날짜가 변경된다', async () => {
+    // GIVEN: 수정할 기존 일정이 존재하고, 수정 API 핸들러가 설정됨
+    setupMockHandlerUpdating([
+      {
+        id: '1',
+        title: '수정 전 회의',
+        date: '2025-10-15',
+        startTime: '09:00',
+        endTime: '10:00',
+        description: '이 내용은 수정될 수 있습니다.',
+        location: '회의실 A',
+        category: '업무',
+        repeat: { type: 'none', interval: 0 },
+        notificationTime: 10,
+      },
+    ]);
+    const { user } = setup(<App />);
+    await screen.findByText('일정 로딩 완료!');
+
+    // WHEN: 수정 아이콘을 클릭하여 수정 모드로 진입
+    await user.click(await screen.findByLabelText('Edit event'));
+
+    // WHEN: 달력에서 다른 날짜(20일)를 클릭
+    const monthView = screen.getByTestId('month-view');
+    const newDateCell = within(monthView).getByText('20');
+    await user.click(newDateCell);
+
+    // THEN: 폼의 날짜가 클릭한 날짜로 변경됨
+    const dateInput = screen.getByLabelText('날짜');
+    expect(dateInput).toHaveValue('2025-10-20');
+
+    // WHEN: 일정 수정 버튼을 클릭
+    await user.click(screen.getByTestId('event-submit-button'));
+
+    // THEN: 일정 수정 완료 스낵바가 노출됨
+    expect(await screen.findByText('일정이 수정되었습니다')).toBeInTheDocument();
+
+    // THEN: 이벤트 리스트에서 날짜가 변경되어 표시됨
+    const eventList = within(screen.getByTestId('event-list'));
+    expect(eventList.getByText('2025-10-20')).toBeInTheDocument();
+  });
+
   it('기존 일정의 세부 정보를 수정하고 변경사항이 정확히 반영된다', async () => {
     const { user } = setup(<App />);
 
@@ -200,6 +242,38 @@ describe('일정 뷰', () => {
     // 1월 1일 셀 확인
     const januaryFirstCell = within(monthView).getByText('1').closest('td')!;
     expect(within(januaryFirstCell).getByText('신정')).toBeInTheDocument();
+  });
+
+  it('월별 뷰에서 빈 셀(날짜가 없는 셀)을 클릭하면 날짜가 자동 입력되지 않는다', async () => {
+    // GIVEN: 현재 날짜가 2025-10-01로 설정되어있다.
+    vi.setSystemTime(new Date('2025-10-01T00:00:00'));
+    const { user } = setup(<App />);
+    await screen.findByText('일정 로딩 완료!');
+
+    // GIVEN: 폼의 필드가 미리 채워져 있다.
+    const titleInput = screen.getByLabelText('제목');
+    const dateInput = screen.getByLabelText('날짜');
+    const startTimeInput = screen.getByLabelText('시작 시간');
+    const endTimeInput = screen.getByLabelText('종료 시간');
+
+    await user.type(titleInput, '기존 일정');
+    await user.type(dateInput, '2025-10-15');
+    await user.type(startTimeInput, '10:00');
+    await user.type(endTimeInput, '11:00');
+
+    // GIVEN: 월별 뷰가 표시되어 있고, 이전 달의 날짜(29일)가 포함된 빈 셀이 존재한다.
+    const monthView = screen.getByTestId('month-view');
+    // 2025년 10월 1일은 수요일이므로, 9월 28, 29, 30일이 달력에 표시됩니다.
+    const emptyCell = within(monthView).getAllByText('29')[0]; 
+
+    // WHEN: 빈 셀을 클릭한다.
+    await user.click(emptyCell);
+
+    // THEN: 폼의 날짜 필드와 다른 필드 값이 유지된다.
+    expect(dateInput).toHaveValue('2025-10-15');
+    expect(titleInput).toHaveValue('기존 일정');
+    expect(startTimeInput).toHaveValue('10:00');
+    expect(endTimeInput).toHaveValue('11:00');
   });
 });
 
