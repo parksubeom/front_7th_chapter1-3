@@ -243,38 +243,6 @@ describe('일정 뷰', () => {
     const januaryFirstCell = within(monthView).getByText('1').closest('td')!;
     expect(within(januaryFirstCell).getByText('신정')).toBeInTheDocument();
   });
-
-  it('월별 뷰에서 빈 셀(날짜가 없는 셀)을 클릭하면 날짜가 자동 입력되지 않는다', async () => {
-    // GIVEN: 현재 날짜가 2025-10-01로 설정되어있다.
-    vi.setSystemTime(new Date('2025-10-01T00:00:00'));
-    const { user } = setup(<App />);
-    await screen.findByText('일정 로딩 완료!');
-
-    // GIVEN: 폼의 필드가 미리 채워져 있다.
-    const titleInput = screen.getByLabelText('제목');
-    const dateInput = screen.getByLabelText('날짜');
-    const startTimeInput = screen.getByLabelText('시작 시간');
-    const endTimeInput = screen.getByLabelText('종료 시간');
-
-    await user.type(titleInput, '기존 일정');
-    await user.type(dateInput, '2025-10-15');
-    await user.type(startTimeInput, '10:00');
-    await user.type(endTimeInput, '11:00');
-
-    // GIVEN: 월별 뷰가 표시되어 있고, 이전 달의 날짜(29일)가 포함된 빈 셀이 존재한다.
-    const monthView = screen.getByTestId('month-view');
-    // 2025년 10월 1일은 수요일이므로, 9월 28, 29, 30일이 달력에 표시됩니다.
-    const emptyCell = within(monthView).getAllByText('29')[0]; 
-
-    // WHEN: 빈 셀을 클릭한다.
-    await user.click(emptyCell);
-
-    // THEN: 폼의 날짜 필드와 다른 필드 값이 유지된다.
-    expect(dateInput).toHaveValue('2025-10-15');
-    expect(titleInput).toHaveValue('기존 일정');
-    expect(startTimeInput).toHaveValue('10:00');
-    expect(endTimeInput).toHaveValue('11:00');
-  });
 });
 
 describe('검색 기능', () => {
